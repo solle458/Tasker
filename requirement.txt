@@ -1,0 +1,6 @@
+ruff
+ty
+pytest
+google-generativeai
+google-api-python-client
+google-auth-oauthlib
