@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os
 
-dotenv_path = Path(__file__).parent.parent / '.env'
+dotenv_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path)
 # The client gets the API key from the environment variable `GEMINI_API_KEY`.
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
