@@ -15,3 +15,8 @@ dependencies = [
     "ruff>=0.14.13",
     "ty>=0.0.12",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+addopts = "-v --tb=short"

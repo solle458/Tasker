@@ -3,8 +3,8 @@ from typing import List, Optional
 
 from src.domain.models.note import Note, NoteType
 
-class NoteRepository(ABC):
 
+class NoteRepository(ABC):
     @abstractmethod
     def get_all_note_names(self) -> List[str]:
         """すべてのノートのファイル名を取得する

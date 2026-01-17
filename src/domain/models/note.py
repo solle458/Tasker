@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List
 from enum import Enum, auto
 
+
 class NoteType(Enum):
     """Note type enum
     Attributes:
@@ -13,12 +14,14 @@ class NoteType(Enum):
         Fleeting(str): 一時的なノート
         Permanent(str): 永続的なノート
     """
+
     Index = auto()
     Structure = auto()
     Daily = auto()
     Literature = auto()
     Fleeting = auto()
     Permanent = auto()
+
 
 @dataclass
 class Property:
@@ -29,10 +32,12 @@ class Property:
         aliases(List[str]): エイリアス
         uid(str): UID
     """
+
     tags: List[str] = field(default_factory=list)
-    title: str = field(default='')
+    title: str = field(default="")
     aliases: List[str] = field(default_factory=list)
-    uid: str = field(default='')
+    uid: str = field(default="")
+
 
 @dataclass
 class Note:
@@ -44,10 +49,11 @@ class Note:
         links(List[str]): リンク
         note_type(NoteType): ノートの種類
     """
+
     name: str = field(
         default_factory=lambda: datetime.now().strftime("%Y-%m-%d-T%H-%M-%S.md")
     )
     properties: Property = field(default_factory=Property)
-    content: str = field(default='')
+    content: str = field(default="")
     links: List[str] = field(default_factory=list)
     note_type: NoteType = field(default=NoteType.Literature)
