@@ -51,7 +51,7 @@ class Note:
     """
 
     name: str = field(
-        default_factory=lambda: datetime.now().strftime("%Y-%m-%d-T%H-%M-%S.md")
+        default_factory=lambda: datetime.now().strftime("%Y-%m-%dT-%H-%M-%S.md")
     )
     properties: Property = field(default_factory=Property)
     content: str = field(default="")
