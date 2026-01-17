@@ -4,12 +4,29 @@ from typing import List, Optional
 from src.domain.models.note import Note, NoteType
 
 class NoteRepository(ABC):
+
     @abstractmethod
-    def get_by_title(self, title: str) -> Optional[Note]:
-        """タイトルでノートを取得する
+    def get_all_note_names(self) -> List[str]:
+        """すべてのノートのファイル名を取得する
+        Returns:
+            List[str]: ノートのファイル名
+        """
+        pass
+
+    @abstractmethod
+    def get_all_notes(self) -> List[Note]:
+        """すべてのノートを取得する
+        Returns:
+            List[Note]: ノート
+        """
+        pass
+
+    @abstractmethod
+    def get_by_file_name(self, file_name: str) -> Optional[Note]:
+        """ファイル名でノートを取得する
 
         Args:
-            title(str): タイトル
+            file_name(str): ファイル名
 
         Returns:
             Optional[Note]: ノート
@@ -41,14 +58,14 @@ class NoteRepository(ABC):
         pass
 
     @abstractmethod
-    def get_links(self, note: Note) -> List[str]:
+    def get_links(self, note: Note) -> List[Note]:
         """ノートのリンクを取得する
 
         Args:
             note(Note): ノート
 
         Returns:
-            List[str]: リンク
+            List[Note]: リンク先のノート
         """
         pass
 

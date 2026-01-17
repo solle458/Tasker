@@ -11,3 +11,4 @@ google-genai
 
 # その他
 python-dotenv
+python-frontmatter
