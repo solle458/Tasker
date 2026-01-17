@@ -1,6 +1,13 @@
+# デフォルト開発環境
 ruff
 ty
 pytest
+
+# Google Calender や Gemini を使うためのライブラリ
 google-generativeai
 google-api-python-client
 google-auth-oauthlib
+google-genai
+
+# その他
+python-dotenv
