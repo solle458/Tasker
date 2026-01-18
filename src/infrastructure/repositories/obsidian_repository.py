@@ -419,19 +419,35 @@ class ObsidianRepository(NoteRepository):
             if query in note.content or query in note.properties.title
         ]
 
-    def get_daily_notes(self, days: int) -> List[Note]:
-        """日記を取得する
+    def get_daily_notes(self, days: int, exclude_today: bool = False) -> List[Note]:
+        """日記を取得する（日付順にソート）
 
         Args:
-            days(int): 日数
+            days(int): 取得する日数
+            exclude_today(bool): 当日のノートを除外するかどうか（デフォルト: False）
 
         Returns:
-            List[Note]: 日記
+            List[Note]: 日記（古い順）
         """
         daily_notes = [
             note for note in self.get_all_notes() if note.note_type == NoteType.Daily
         ]
-        logger.debug(f"日記を取得: 全{len(daily_notes)}件中、直近{days}件")
+
+        # UIDまたはファイル名でソート（古い順）
+        daily_notes.sort(key=lambda n: n.properties.uid or n.name)
+
+        # 当日のノートを除外
+        if exclude_today:
+            today = datetime.now().strftime("%Y-%m-%d")
+            daily_notes = [
+                n
+                for n in daily_notes
+                if not (n.properties.uid or n.name).startswith(today)
+            ]
+
+        logger.debug(
+            f"日記を取得: 全{len(daily_notes)}件中、直近{days}件 (exclude_today={exclude_today})"
+        )
         return daily_notes[-days:]
 
     def save_daily_note(self, note: Note) -> None:
