@@ -1,5 +1,12 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
+
+# プロジェクトルートの.envファイルを参照
+# config.py (src/infrastructure/) → src/ → プロジェクトルート
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+_ENV_FILE = _PROJECT_ROOT / ".env"
 
 
 class GoogleCalendarConfig(BaseSettings):
@@ -12,7 +19,7 @@ class GoogleCalendarConfig(BaseSettings):
     # pydantic-settingsの設定
     model_config = SettingsConfigDict(
         env_prefix="GOOGLE_CALENDAR_",  # 環境変数 GOOGLE_CALENDAR_TOKEN_PATH などに対応
-        env_file=".env",
+        env_file=str(_ENV_FILE),
         extra="ignore",
     )
 
@@ -26,7 +33,7 @@ class GeminiConfig(BaseSettings):
     )
     model_config = SettingsConfigDict(
         env_prefix="GEMINI_",
-        env_file=".env",
+        env_file=str(_ENV_FILE),
         extra="ignore",
     )
 
