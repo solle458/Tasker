@@ -6,7 +6,7 @@ from typing import List
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
+from googleapiclient.discovery import build, Resource
 from googleapiclient.errors import HttpError
 
 from src.domain.models.calendar import Calendar, Event
@@ -53,7 +53,7 @@ class GoogleCalendarRepository(CalendarRepository):
 
         self.service = self._get_valid_service()
 
-    def _get_valid_service(self) -> build:
+    def _get_valid_service(self) -> Resource:
         if (
             self.credentials
             and self.credentials.expired
@@ -90,50 +90,40 @@ class GoogleCalendarRepository(CalendarRepository):
         end_date: datetime = datetime.now(timezone.utc) + timedelta(days=30),
         limit: int = 100,
     ) -> List[Event]:
-        """イベントを取得する
-        Args:
-            start_date(datetime): 開始日
-            end_date(datetime): 終了日
-            limit(int): 取得件数
-        Returns:
-            List[Event]: イベント
-        """
-        events = []
+        """イベントを取得する"""
         try:
             service = self._get_valid_service()
-            events = (
+            # ISOフォーマット文字列への変換を推奨
+            events_result = (
                 service.events()
                 .list(
                     calendarId=self.config.calendar_id,
-                    timeMin=start_date,
-                    timeMax=end_date,
+                    timeMin=start_date.isoformat(),
+                    timeMax=end_date.isoformat(),
                     maxResults=limit,
+                    singleEvents=True, # 繰り返しの予定を個別に展開するために推奨
+                    orderBy="startTime",
                 )
                 .execute()
             )
+            
+            items = events_result.get("items", [])
             return [
                 Event(
-                    name=event["summary"],
-                    start=event["start"]["dateTime"],
-                    end=event["end"]["dateTime"],
-                    description=event["description"],
+                    name=item.get("summary", "(No Title)"),
+                    # 終日予定などの場合、dateTimeではなくdateキーになる点に注意
+                    start=item["start"].get("dateTime", item["start"].get("date")),
+                    end=item["end"].get("dateTime", item["end"].get("date")),
+                    description=item.get("description", ""),
                 )
-                for event in events.get("items", [])
+                for item in items
             ]
         except HttpError as error:
             logger.error(f"イベントの取得に失敗しました: {error}")
-            raise error
-        finally:
-            return events
+            raise  # 例外を再送出し、呼び出し元で処理させる（finallyでの戻しは不要）
 
     def get_event(self, event_id: str) -> Event:
-        """イベントを取得する
-        Args:
-            event_id(str): イベントID
-        Returns:
-            Event: イベント
-        """
-        event = None
+        """イベントを取得する"""
         try:
             service = self._get_valid_service()
             event = (
@@ -142,13 +132,11 @@ class GoogleCalendarRepository(CalendarRepository):
                 .execute()
             )
             return Event(
-                name=event["summary"],
-                start=event["start"]["dateTime"],
-                end=event["end"]["dateTime"],
-                description=event["description"],
+                name=event.get("summary", ""),
+                start=event["start"].get("dateTime", event["start"].get("date")),
+                end=event["end"].get("dateTime", event["end"].get("date")),
+                description=event.get("description", ""),
             )
         except HttpError as error:
-            logger.error(f"イベントの取得に失敗しました: {error}")
-            raise error
-        finally:
-            return event
+            logger.error(f"イベントの取得に失敗しました (ID: {event_id}): {error}")
+            raise

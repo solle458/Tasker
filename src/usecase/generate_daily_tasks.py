@@ -51,7 +51,7 @@ class GenerateDailyTasksUseCase:
         achievement_rate = 0.0
         if weekly_daily_notes:
             yesterday_note = weekly_daily_notes[-1]  # 最新のノート
-            achievement_rate = self.note_repository.arhievment_rate(yesterday_note)
+            achievement_rate = self.note_repository.achievement_rate(yesterday_note)
 
         # 全ノートのメタデータを取得（目次用）
         all_notes = self.note_repository.get_all_notes()

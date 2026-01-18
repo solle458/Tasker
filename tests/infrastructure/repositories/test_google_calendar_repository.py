@@ -1,5 +1,5 @@
 """
-infrastructure/repositories/google_calender_repository.py のテスト
+infrastructure/repositories/google_calendar_repository.py のテスト
 """
 
 import pytest
@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 
 from googleapiclient.errors import HttpError
 
-from src.infrastructure.repositories.google_calender_repository import (
+from src.infrastructure.repositories.google_calendar_repository import (
     GoogleCalendarRepository,
 )
 from src.infrastructure.config import GoogleCalendarConfig
@@ -105,9 +105,9 @@ class TestGoogleCalendarRepositoryInit:
     """GoogleCalendarRepository 初期化のテスト"""
 
     @patch(
-        "src.infrastructure.repositories.google_calender_repository.InstalledAppFlow"
+        "src.infrastructure.repositories.google_calendar_repository.InstalledAppFlow"
     )
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_init_with_new_credentials(
         self, mock_build, mock_flow_class, mock_config, mock_credentials
     ):
@@ -128,8 +128,8 @@ class TestGoogleCalendarRepositoryInit:
         assert repo.credentials == mock_credentials
         mock_flow.run_local_server.assert_called_once_with(port=0)
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_init_with_existing_valid_token(
         self, mock_build, mock_creds_class, mock_config, mock_credentials
     ):
@@ -148,9 +148,9 @@ class TestGoogleCalendarRepositoryInit:
         assert repo.credentials == mock_credentials
         mock_creds_class.from_authorized_user_file.assert_called_once()
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.Request")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Request")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_init_with_expired_token_refreshes(
         self, mock_build, mock_request_class, mock_creds_class, mock_config
     ):
@@ -182,8 +182,8 @@ class TestGoogleCalendarRepositoryInit:
 class TestGetCalendars:
     """get_calendars メソッドのテスト"""
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_get_calendars_success(
         self,
         mock_build,
@@ -213,8 +213,8 @@ class TestGetCalendars:
         assert calendars[1].name == "Calendar 2"
         assert calendars[2].name == "Calendar 3"
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_get_calendars_empty(
         self, mock_build, mock_creds_class, mock_config, mock_credentials
     ):
@@ -235,8 +235,8 @@ class TestGetCalendars:
 
         assert calendars == []
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_get_calendars_http_error(
         self, mock_build, mock_creds_class, mock_config, mock_credentials
     ):
@@ -267,8 +267,8 @@ class TestGetCalendars:
 class TestGetEvents:
     """get_events メソッドのテスト"""
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_get_events_success(
         self,
         mock_build,
@@ -298,8 +298,8 @@ class TestGetEvents:
         # 本来は List[Event] を返すべき
         assert events is not None
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_get_events_empty(
         self, mock_build, mock_creds_class, mock_config, mock_credentials
     ):
@@ -320,8 +320,8 @@ class TestGetEvents:
 
         assert events is not None
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_get_events_http_error(
         self, mock_build, mock_creds_class, mock_config, mock_credentials
     ):
@@ -353,8 +353,8 @@ class TestGetEvents:
 class TestGetEvent:
     """get_event メソッドのテスト"""
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_get_event_success(
         self,
         mock_build,
@@ -381,8 +381,8 @@ class TestGetEvent:
         # Note: 現在の実装では finally で event (dict) を返すバグがある
         assert event is not None
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_get_event_http_error(
         self, mock_build, mock_creds_class, mock_config, mock_credentials
     ):
@@ -414,8 +414,8 @@ class TestGetEvent:
 class TestGetValidService:
     """_get_valid_service メソッドのテスト"""
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_service_not_refreshed_when_valid(
         self, mock_build, mock_creds_class, mock_config, mock_credentials
     ):
@@ -435,9 +435,9 @@ class TestGetValidService:
         # リフレッシュは呼ばれない（初期化時のみ）
         assert service == mock_service
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.Request")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Request")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_service_refreshed_when_expired(
         self, mock_build, mock_request_class, mock_creds_class, mock_config
     ):
@@ -460,8 +460,8 @@ class TestGetValidService:
         assert expired_creds.refresh.called
         assert _repo is not None
 
-    @patch("src.infrastructure.repositories.google_calender_repository.Credentials")
-    @patch("src.infrastructure.repositories.google_calender_repository.build")
+    @patch("src.infrastructure.repositories.google_calendar_repository.Credentials")
+    @patch("src.infrastructure.repositories.google_calendar_repository.build")
     def test_service_not_refreshed_when_credentials_none(
         self, mock_build, mock_creds_class, mock_config
     ):

@@ -119,7 +119,7 @@ class NoteRepository(ABC):
         pass
 
     @abstractmethod
-    def arhievment_rate(self, yesterday_note: Note) -> float:
+    def achievement_rate(self, yesterday_note: Note) -> float:
         """達成率を取得する
 
         Args:

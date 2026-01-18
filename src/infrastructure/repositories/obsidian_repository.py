@@ -581,7 +581,7 @@ class ObsidianRepository(NoteRepository):
         logger.debug(f"タスクをパースしました: {len(tasks)}件")
         return tasks
 
-    def arhievment_rate(self, yesterday_note: Note) -> float:
+    def achievement_rate(self, yesterday_note: Note) -> float:
         """達成率を取得する
 
         Args:

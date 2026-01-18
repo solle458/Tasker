@@ -171,7 +171,7 @@ class TestExec:
         mock_calendar_repository.get_events.return_value = sample_events
         mock_note_repository.find_by_note_type.return_value = sample_index_notes
         mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
-        mock_note_repository.arhievment_rate.return_value = 0.8
+        mock_note_repository.achievement_rate.return_value = 0.8
         mock_note_repository.get_all_notes.return_value = sample_all_notes
         mock_reasoning_repository.generate_tasks.return_value = sample_generated_tasks
 
@@ -212,7 +212,7 @@ class TestExec:
         mock_calendar_repository.get_events.return_value = sample_events
         mock_note_repository.find_by_note_type.return_value = sample_index_notes
         mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
-        mock_note_repository.arhievment_rate.return_value = 0.75
+        mock_note_repository.achievement_rate.return_value = 0.75
         mock_note_repository.get_all_notes.return_value = sample_all_notes
         mock_reasoning_repository.generate_tasks.return_value = sample_generated_tasks
 
@@ -239,7 +239,7 @@ class TestExec:
         mock_calendar_repository.get_events.return_value = []
         mock_note_repository.find_by_note_type.return_value = sample_index_notes
         mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
-        mock_note_repository.arhievment_rate.return_value = 0.5
+        mock_note_repository.achievement_rate.return_value = 0.5
         mock_note_repository.get_all_notes.return_value = sample_all_notes
         mock_reasoning_repository.generate_tasks.return_value = []
 
@@ -273,8 +273,8 @@ class TestExec:
         # 実行
         use_case.exec()
 
-        # Dailyノートがない場合、arhievment_rate は呼ばれない
-        mock_note_repository.arhievment_rate.assert_not_called()
+        # Dailyノートがない場合、achievement_rate は呼ばれない
+        mock_note_repository.achievement_rate.assert_not_called()
 
         # InitialContext に achievement_rate = 0.0 が渡されていることを確認
         call_args = mock_reasoning_repository.generate_tasks.call_args
@@ -298,7 +298,7 @@ class TestExec:
         mock_calendar_repository.get_events.return_value = sample_events
         mock_note_repository.find_by_note_type.return_value = sample_index_notes
         mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
-        mock_note_repository.arhievment_rate.return_value = 0.2
+        mock_note_repository.achievement_rate.return_value = 0.2
         mock_note_repository.get_all_notes.return_value = sample_all_notes
         mock_reasoning_repository.generate_tasks.return_value = sample_generated_tasks
 
@@ -326,7 +326,7 @@ class TestExec:
         mock_calendar_repository.get_events.return_value = sample_events
         mock_note_repository.find_by_note_type.return_value = []
         mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
-        mock_note_repository.arhievment_rate.return_value = 0.6
+        mock_note_repository.achievement_rate.return_value = 0.6
         mock_note_repository.get_all_notes.return_value = sample_weekly_notes
         mock_reasoning_repository.generate_tasks.return_value = [
             Task(name="基本タスク", task_type=TaskType.Daily, is_completed=False)
@@ -359,7 +359,7 @@ class TestExec:
         mock_calendar_repository.get_events.return_value = sample_events
         mock_note_repository.find_by_note_type.return_value = sample_index_notes
         mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
-        mock_note_repository.arhievment_rate.return_value = 0.7
+        mock_note_repository.achievement_rate.return_value = 0.7
         mock_note_repository.get_all_notes.return_value = sample_all_notes
         mock_reasoning_repository.generate_tasks.return_value = sample_generated_tasks
 

@@ -1,31 +1,31 @@
-make run:
+run:
 	uv run -m src.main
 
-make install:
+install:
 	uv sync
 	uv add -r requirement.txt
 
-make check:
+check:
 	make lint
 	make type
 	make test
 	make format
 
-make test:
+test:
 	uv run pytest
 
-make lint:
+lint:
 	uv run ruff check .
 	uv run ruff format .
 	uv run ruff check --fix .
 
-make format:
+format:
 	uv run ruff format .
 
-make type:
+type:
 	uv run ty check src
 
-make clean:
+clean:
 	uv run rm -rf .pytest_cache
 	uv run rm -rf .ruff_cache
 	uv run rm -rf .coverage
