@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import List
 from enum import Enum, auto
 
+from src.domain.models.task import Task
+
 
 class NoteType(Enum):
     """Note type enum
@@ -48,12 +50,14 @@ class Note:
         content(str): ノートの内容
         links(List[str]): リンク
         note_type(NoteType): ノートの種類
+        tasks(List[Task]): タスクリスト（Dailyノートで使用）
     """
 
     name: str = field(
-        default_factory=lambda: datetime.now().strftime("%Y-%m-%dT-%H-%M-%S.md")
+        default_factory=lambda: datetime.now().strftime("%Y-%m-%dT%H-%M-%S.md")
     )
     properties: Property = field(default_factory=Property)
     content: str = field(default="")
     links: List[str] = field(default_factory=list)
     note_type: NoteType = field(default=NoteType.Literature)
+    tasks: List[Task] = field(default_factory=list)

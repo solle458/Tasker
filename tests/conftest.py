@@ -4,9 +4,12 @@ pytest 共通フィクスチャ
 
 import pytest
 from pathlib import Path
+from datetime import datetime
 
 from src.infrastructure.repositories.obsidian_repository import ObsidianRepository
 from src.domain.models.note import Note, NoteType, Property
+from src.domain.models.task import Task, TaskType
+from src.domain.models.calendar import Event, Calendar
 
 
 @pytest.fixture
@@ -150,4 +153,59 @@ def sample_note(sample_property: Property) -> Note:
         content="# Sample Note\n\nThis is a sample note.",
         links=["Related Note", "Another Note"],
         note_type=NoteType.Literature,
+    )
+
+
+# =============================================================================
+# Task フィクスチャ
+# =============================================================================
+
+
+@pytest.fixture
+def sample_task() -> Task:
+    """サンプルTaskインスタンス
+
+    Returns:
+        Task: テスト用Taskインスタンス
+    """
+    return Task(
+        name="サンプルタスク",
+        task_type=TaskType.Must,
+        is_completed=False,
+    )
+
+
+# =============================================================================
+# Calendar フィクスチャ
+# =============================================================================
+
+
+@pytest.fixture
+def sample_event() -> Event:
+    """サンプルEventインスタンス
+
+    Returns:
+        Event: テスト用Eventインスタンス
+    """
+    return Event(
+        name="サンプルイベント",
+        start=datetime(2026, 1, 18, 10, 0, 0),
+        end=datetime(2026, 1, 18, 11, 0, 0),
+        description="サンプルイベントの説明",
+    )
+
+
+@pytest.fixture
+def sample_calendar(sample_event: Event) -> Calendar:
+    """サンプルCalendarインスタンス
+
+    Args:
+        sample_event: Eventインスタンス
+
+    Returns:
+        Calendar: テスト用Calendarインスタンス
+    """
+    return Calendar(
+        name="サンプルカレンダー",
+        events=[sample_event],
     )

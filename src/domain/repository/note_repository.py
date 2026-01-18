@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from src.domain.models.note import Note, NoteType
+from src.domain.models.calendar import Event
 
 
 class NoteRepository(ABC):
@@ -99,5 +100,32 @@ class NoteRepository(ABC):
 
         Args:
             note(Note): 日報
+        """
+        pass
+
+    @abstractmethod
+    def find_relevant_notes(
+        self, events: List[Event] = [], note_list: List[Note] = []
+    ) -> List[Note]:
+        """関連するノートを取得する
+
+        Args:
+            events(List[Event]): イベント
+            note_list(List[Note]): ノートリスト
+
+        Returns:
+            List[Note]: 関連するノート
+        """
+        pass
+
+    @abstractmethod
+    def achievement_rate(self, yesterday_note: Note) -> float:
+        """達成率を取得する
+
+        Args:
+            yesterday_note(Note): 昨日のノート
+
+        Returns:
+            float: 達成率
         """
         pass
