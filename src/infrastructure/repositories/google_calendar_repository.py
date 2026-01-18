@@ -65,6 +65,9 @@ class GoogleCalendarRepository(CalendarRepository):
         elif self.service is None and self.credentials:
             # service が未初期化の場合は初期化
             self.service = build("calendar", "v3", credentials=self.credentials)
+
+        if self.service is None:
+            raise RuntimeError("Google Calendar service の初期化に失敗しました")
         return self.service
 
     def get_calendars(self) -> List[Calendar]:
@@ -75,7 +78,7 @@ class GoogleCalendarRepository(CalendarRepository):
         calendars = []
         try:
             service = self._get_valid_service()
-            calendars = service.calendars().list().execute()
+            calendars = service.calendars().list().execute()  # type: ignore[attr-defined]
             return [
                 Calendar(name=calendar["summary"])
                 for calendar in calendars.get("items", [])
@@ -95,18 +98,18 @@ class GoogleCalendarRepository(CalendarRepository):
             service = self._get_valid_service()
             # ISOフォーマット文字列への変換を推奨
             events_result = (
-                service.events()
+                service.events()  # type: ignore[attr-defined]
                 .list(
                     calendarId=self.config.calendar_id,
                     timeMin=start_date.isoformat(),
                     timeMax=end_date.isoformat(),
                     maxResults=limit,
-                    singleEvents=True, # 繰り返しの予定を個別に展開するために推奨
+                    singleEvents=True,  # 繰り返しの予定を個別に展開するために推奨
                     orderBy="startTime",
                 )
                 .execute()
             )
-            
+
             items = events_result.get("items", [])
             return [
                 Event(
@@ -127,7 +130,7 @@ class GoogleCalendarRepository(CalendarRepository):
         try:
             service = self._get_valid_service()
             event = (
-                service.events()
+                service.events()  # type: ignore[attr-defined]
                 .get(calendarId=self.config.calendar_id, eventId=event_id)
                 .execute()
             )

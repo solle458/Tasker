@@ -340,9 +340,9 @@ class TestGetEvents:
 
         repo = GoogleCalendarRepository(mock_config)
 
-        # Note: finally で空リストを返すので例外は発生しない（バグ）
-        events = repo.get_events()
-        assert events == []
+        # HttpError が正しく re-raise される
+        with pytest.raises(HttpError):
+            repo.get_events()
 
 
 # =============================================================================
@@ -401,9 +401,9 @@ class TestGetEvent:
 
         repo = GoogleCalendarRepository(mock_config)
 
-        # Note: finally で None を返すので例外は発生しない（バグ）
-        event = repo.get_event("nonexistent_id")
-        assert event is None
+        # HttpError が正しく re-raise される
+        with pytest.raises(HttpError):
+            repo.get_event("nonexistent_id")
 
 
 # =============================================================================
