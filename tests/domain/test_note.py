@@ -95,8 +95,8 @@ class TestNote:
         """デフォルトのnameが日時フォーマットになっていることを確認"""
         note = Note()
 
-        # フォーマット: %Y-%m-%d-T%H-%M-%S.md
-        pattern = r"^\d{4}-\d{2}-\d{2}-T\d{2}-\d{2}-\d{2}\.md$"
+        # フォーマット: %Y-%m-%dT%H-%M-%S.md (ISO 8601形式)
+        pattern = r"^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.md$"
         assert re.match(pattern, note.name) is not None
 
     def test_with_arguments(self):
