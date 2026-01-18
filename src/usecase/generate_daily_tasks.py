@@ -1,4 +1,5 @@
 from typing import List
+from datetime import datetime, timezone, timedelta
 
 from src.domain.repository.calendar_repository import CalendarRepository
 from src.domain.repository.note_repository import NoteRepository
@@ -29,7 +30,11 @@ class GenerateDailyTasksUseCase:
         Returns:
             List[Task]: 生成されたタスク
         """
-        events = self.calendar_repository.get_events()
+        events = self.calendar_repository.get_events(
+            start_date=datetime.now(timezone.utc),
+            end_date=datetime.now(timezone.utc) + timedelta(days=30),
+            limit=100,
+        )
         weekly_notes = self.note_repository.get_daily_notes(7)
         yesterday_note = weekly_notes[0]
         arhievment_rate = self.note_repository.arhievment_rate(yesterday_note)

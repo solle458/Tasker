@@ -38,14 +38,25 @@ class GeminiRepository(ReasoningRepository):
             str: フォーマットされたプロンプト
         """
         # ノート情報を文字列化
-        notes_str = "\n".join(
-            [f"- {note.properties.title}: {note.content[:200]}..." for note in relevant_notes]
-        ) if relevant_notes else "なし"
+        notes_str = (
+            "\n".join(
+                [
+                    f"- {note.properties.title}: {note.content[:200]}..."
+                    for note in relevant_notes
+                ]
+            )
+            if relevant_notes
+            else "なし"
+        )
 
         # イベント情報を文字列化
-        events_str = "\n".join(
-            [f"- {event.name} ({event.start} ~ {event.end})" for event in events]
-        ) if events else "なし"
+        events_str = (
+            "\n".join(
+                [f"- {event.name} ({event.start} ~ {event.end})" for event in events]
+            )
+            if events
+            else "なし"
+        )
 
         return f"""
 ## 入力データ
@@ -149,5 +160,5 @@ task_type は以下のいずれかを指定してください:
         response = self.client.models.generate_content(
             model=self.config.model, contents=prompt
         )
-        tasks = self._parse_tasks_from_json(response.text)
+        tasks = self._parse_tasks_from_json(str(response.text))
         return tasks
