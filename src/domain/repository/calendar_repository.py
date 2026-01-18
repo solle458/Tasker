@@ -4,6 +4,7 @@ from datetime import datetime
 
 from src.domain.models.calendar import Calendar, Event
 
+
 class CalendarRepository(ABC):
     @abstractmethod
     def get_calendars(self) -> List[Calendar]:
@@ -14,7 +15,9 @@ class CalendarRepository(ABC):
         pass
 
     @abstractmethod
-    def get_events(self, start_date: datetime, end_date: datetime, limit: int) -> List[Event]:
+    def get_events(
+        self, start_date: datetime, end_date: datetime, limit: int
+    ) -> List[Event]:
         """イベントを取得する
         Args:
             start_date(datetime): 開始日
