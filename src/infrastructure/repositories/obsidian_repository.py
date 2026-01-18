@@ -6,8 +6,9 @@ from typing import List, Optional, Dict
 from pathlib import Path
 from datetime import datetime
 
-
-from domain.repository.note_repository import NoteRepository
+from src.domain.models.task import Task, TaskType
+from src.domain.models.calendar import Event
+from src.domain.repository.note_repository import NoteRepository
 from src.domain.models.note import Note, NoteType, Property
 from src.domain.exceptions import (
     NoteNotFoundError,
@@ -491,3 +492,119 @@ class ObsidianRepository(NoteRepository):
                 f"ファイルの書き込みに失敗しました: {daily_note_path}",
                 e,
             )
+
+    def find_relevant_notes(
+        self, events: List[Event] = [], weekly_notes: List[Note] = []
+    ) -> List[Note]:
+        """関連するタスクを取得する
+
+        Args:
+            events(List[Event]): イベント
+            weekly_notes(List[Note]): 週報
+
+        Returns:
+            List[Note]: 関連するノート
+        """
+        relevant_notes = set[Note]()
+        for event in events:
+            relevant_notes.update(self.search_by_text(event.name))
+        for note in weekly_notes:
+            relevant_notes.update(self.get_links(note))
+        return list(relevant_notes)
+
+    def _parse_tasks_from_content(self, content: str) -> List[Task]:
+        """Daily Note の content から Task をパースする
+
+        パース対象の Markdown 形式:
+        ```markdown
+        ## Task
+        ### Daily
+        - [ ] 未完了タスク
+        - [x] 完了タスク
+
+        ### Must
+        - [ ] 必須タスク
+        ```
+
+        Args:
+            content(str): Daily Note の本文
+
+        Returns:
+            List[Task]: パースされたタスクのリスト
+        """
+        tasks: List[Task] = []
+
+        # ## Task セクションを抽出
+        task_section_match = re.search(
+            r"^## Task\s*$(.*?)(?=^## |\Z)",
+            content,
+            re.MULTILINE | re.DOTALL,
+        )
+        if not task_section_match:
+            logger.debug("## Task セクションが見つかりません")
+            return tasks
+
+        task_section = task_section_match.group(1)
+
+        # TaskType のマッピング
+        type_mapping = {
+            "Daily": TaskType.Daily,
+            "Must": TaskType.Must,
+            "Should": TaskType.Should,
+            "Could": TaskType.Could,
+        }
+
+        # ### セクションごとにパース
+        current_type: Optional[TaskType] = None
+        for line in task_section.split("\n"):
+            line = line.strip()
+
+            # ### セクションヘッダーをチェック
+            section_match = re.match(r"^### (Daily|Must|Should|Could)\s*$", line)
+            if section_match:
+                current_type = type_mapping.get(section_match.group(1))
+                continue
+
+            # タスク行をチェック（- [ ] または - [x]）
+            task_match = re.match(r"^- \[([ xX])\] (.+)$", line)
+            if task_match and current_type is not None:
+                is_completed = task_match.group(1).lower() == "x"
+                task_name = task_match.group(2).strip()
+                tasks.append(
+                    Task(
+                        name=task_name,
+                        task_type=current_type,
+                        is_completed=is_completed,
+                    )
+                )
+
+        logger.debug(f"タスクをパースしました: {len(tasks)}件")
+        return tasks
+
+    def arhievment_rate(self, yesterday_note: Note) -> float:
+        """達成率を取得する
+
+        Args:
+            yesterday_note(Note): 昨日のノート
+
+        Returns:
+            float: 達成率（0.0 ~ 1.0）。タスクがない場合は 0.0 を返す。
+
+        Raises:
+            ValueError: ノートが Daily ノートでない場合
+        """
+        if yesterday_note.note_type != NoteType.Daily:
+            raise ValueError("このノートは日記ではありません")
+
+        tasks = self._parse_tasks_from_content(yesterday_note.content)
+
+        if not tasks:
+            logger.debug("タスクが見つかりません。達成率は 0.0 を返します。")
+            return 0.0
+
+        completed_count = sum(1 for task in tasks if task.is_completed)
+        total_count = len(tasks)
+
+        rate = completed_count / total_count
+        logger.debug(f"達成率を計算: {completed_count}/{total_count} = {rate:.2%}")
+        return rate

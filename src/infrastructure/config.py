@@ -17,5 +17,17 @@ class GoogleCalendarConfig(BaseSettings):
     )
 
 
+class GeminiConfig(BaseSettings):
+    api_key: str = Field(default="")
+    model: str = Field(default="gemini-3-flash-preview")
+    prompt_path: str = Field(default="prompts/gemini.md")
+    model_config = SettingsConfigDict(
+        env_prefix="GEMINI_",
+        env_file=".env",
+        extra="ignore",
+    )
+
+
 class Config(BaseSettings):
     google_calendar: GoogleCalendarConfig = Field(default=GoogleCalendarConfig())
+    gemini: GeminiConfig = Field(default=GeminiConfig())
