@@ -105,13 +105,13 @@ class NoteRepository(ABC):
 
     @abstractmethod
     def find_relevant_notes(
-        self, events: List[Event] = [], weekly_notes: List[Note] = []
+        self, events: List[Event] = [], note_list: List[Note] = []
     ) -> List[Note]:
         """関連するノートを取得する
 
         Args:
             events(List[Event]): イベント
-            weekly_notes(List[Note]): 週報
+            note_list(List[Note]): ノートリスト
 
         Returns:
             List[Note]: 関連するノート
