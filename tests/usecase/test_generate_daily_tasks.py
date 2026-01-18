@@ -4,11 +4,13 @@ usecase/generate_daily_tasks.py のテスト
 
 import pytest
 from unittest.mock import Mock
+from datetime import datetime
 
 from src.usecase.generate_daily_tasks import GenerateDailyTasksUseCase
 from src.domain.models.task import Task, TaskType
 from src.domain.models.note import Note, NoteType, Property
 from src.domain.models.calendar import Event
+from src.domain.models.context import InitialContext
 
 
 # =============================================================================
@@ -47,8 +49,6 @@ def use_case(mock_calendar_repository, mock_note_repository, mock_reasoning_repo
 @pytest.fixture
 def sample_events():
     """サンプルイベントリスト"""
-    from datetime import datetime
-
     return [
         Event(
             name="朝会",
@@ -62,6 +62,26 @@ def sample_events():
             end=datetime(2026, 1, 18, 15, 0),
             description="週次レビュー",
         ),
+    ]
+
+
+@pytest.fixture
+def sample_index_notes():
+    """サンプルIndexノートリスト"""
+    prop = Property(
+        tags=["obsidian/section/index"],
+        title="Index Note",
+        aliases=[],
+        uid="index-001",
+    )
+    return [
+        Note(
+            name="Index.md",
+            properties=prop,
+            content="# 長期目標\n\n- 目標1\n- 目標2",
+            links=[],
+            note_type=NoteType.Index,
+        )
     ]
 
 
@@ -88,23 +108,9 @@ def sample_weekly_notes():
 
 
 @pytest.fixture
-def sample_relevant_notes():
-    """サンプル関連ノートリスト"""
-    prop = Property(
-        tags=["obsidian/section/literature"],
-        title="プロジェクト関連ノート",
-        aliases=[],
-        uid="project-001",
-    )
-    return [
-        Note(
-            name="project_note.md",
-            properties=prop,
-            content="# プロジェクト\n\n関連情報",
-            links=[],
-            note_type=NoteType.Literature,
-        )
-    ]
+def sample_all_notes(sample_index_notes, sample_weekly_notes):
+    """全ノートリスト"""
+    return sample_index_notes + sample_weekly_notes
 
 
 @pytest.fixture
@@ -155,16 +161,18 @@ class TestExec:
         mock_note_repository,
         mock_reasoning_repository,
         sample_events,
+        sample_index_notes,
         sample_weekly_notes,
-        sample_relevant_notes,
+        sample_all_notes,
         sample_generated_tasks,
     ):
         """execが全てのリポジトリメソッドを正しく呼び出すことを確認"""
         # モックの設定
         mock_calendar_repository.get_events.return_value = sample_events
+        mock_note_repository.find_by_note_type.return_value = sample_index_notes
         mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
         mock_note_repository.arhievment_rate.return_value = 0.8
-        mock_note_repository.find_relevant_notes.return_value = sample_relevant_notes
+        mock_note_repository.get_all_notes.return_value = sample_all_notes
         mock_reasoning_repository.generate_tasks.return_value = sample_generated_tasks
 
         # 実行
@@ -172,18 +180,19 @@ class TestExec:
 
         # 検証
         mock_calendar_repository.get_events.assert_called_once()
+        mock_note_repository.find_by_note_type.assert_called_once_with(NoteType.Index)
         mock_note_repository.get_daily_notes.assert_called_once_with(7)
-        mock_note_repository.arhievment_rate.assert_called_once_with(
-            sample_weekly_notes[0]
-        )
-        mock_note_repository.find_relevant_notes.assert_called_once_with(
-            events=sample_events, weekly_notes=sample_weekly_notes
-        )
-        mock_reasoning_repository.generate_tasks.assert_called_once_with(
-            arhievment_rate=0.8,
-            relevant_notes=sample_relevant_notes,
-            events=sample_events,
-        )
+        mock_note_repository.get_all_notes.assert_called_once()
+        mock_reasoning_repository.generate_tasks.assert_called_once()
+
+        # InitialContext が渡されていることを確認
+        call_args = mock_reasoning_repository.generate_tasks.call_args
+        initial_context = call_args[0][0]
+        assert isinstance(initial_context, InitialContext)
+        assert initial_context.achievement_rate == 0.8
+        assert len(initial_context.index_notes) == 1
+        assert len(initial_context.weekly_daily_notes) == 7
+
         assert result == sample_generated_tasks
 
     def test_exec_returns_tasks(
@@ -193,16 +202,18 @@ class TestExec:
         mock_note_repository,
         mock_reasoning_repository,
         sample_events,
+        sample_index_notes,
         sample_weekly_notes,
-        sample_relevant_notes,
+        sample_all_notes,
         sample_generated_tasks,
     ):
         """execがタスクリストを返すことを確認"""
         # モックの設定
         mock_calendar_repository.get_events.return_value = sample_events
+        mock_note_repository.find_by_note_type.return_value = sample_index_notes
         mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
         mock_note_repository.arhievment_rate.return_value = 0.75
-        mock_note_repository.find_relevant_notes.return_value = sample_relevant_notes
+        mock_note_repository.get_all_notes.return_value = sample_all_notes
         mock_reasoning_repository.generate_tasks.return_value = sample_generated_tasks
 
         # 実行
@@ -219,30 +230,56 @@ class TestExec:
         mock_calendar_repository,
         mock_note_repository,
         mock_reasoning_repository,
+        sample_index_notes,
         sample_weekly_notes,
-        sample_relevant_notes,
+        sample_all_notes,
     ):
         """イベントが空の場合の動作を確認"""
         # モックの設定
         mock_calendar_repository.get_events.return_value = []
+        mock_note_repository.find_by_note_type.return_value = sample_index_notes
         mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
         mock_note_repository.arhievment_rate.return_value = 0.5
-        mock_note_repository.find_relevant_notes.return_value = sample_relevant_notes
+        mock_note_repository.get_all_notes.return_value = sample_all_notes
         mock_reasoning_repository.generate_tasks.return_value = []
 
         # 実行
         result = use_case.exec()
 
-        # 検証
-        mock_note_repository.find_relevant_notes.assert_called_once_with(
-            events=[], weekly_notes=sample_weekly_notes
-        )
-        mock_reasoning_repository.generate_tasks.assert_called_once_with(
-            arhievment_rate=0.5,
-            relevant_notes=sample_relevant_notes,
-            events=[],
-        )
+        # InitialContext に空のイベントが渡されていることを確認
+        call_args = mock_reasoning_repository.generate_tasks.call_args
+        initial_context = call_args[0][0]
+        assert initial_context.events == []
+
         assert result == []
+
+    def test_exec_with_no_daily_notes(
+        self,
+        use_case,
+        mock_calendar_repository,
+        mock_note_repository,
+        mock_reasoning_repository,
+        sample_events,
+        sample_index_notes,
+    ):
+        """Dailyノートがない場合の動作を確認"""
+        # モックの設定
+        mock_calendar_repository.get_events.return_value = sample_events
+        mock_note_repository.find_by_note_type.return_value = sample_index_notes
+        mock_note_repository.get_daily_notes.return_value = []
+        mock_note_repository.get_all_notes.return_value = sample_index_notes
+        mock_reasoning_repository.generate_tasks.return_value = []
+
+        # 実行
+        use_case.exec()
+
+        # Dailyノートがない場合、arhievment_rate は呼ばれない
+        mock_note_repository.arhievment_rate.assert_not_called()
+
+        # InitialContext に achievement_rate = 0.0 が渡されていることを確認
+        call_args = mock_reasoning_repository.generate_tasks.call_args
+        initial_context = call_args[0][0]
+        assert initial_context.achievement_rate == 0.0
 
     def test_exec_with_low_achievement_rate(
         self,
@@ -251,30 +288,31 @@ class TestExec:
         mock_note_repository,
         mock_reasoning_repository,
         sample_events,
+        sample_index_notes,
         sample_weekly_notes,
-        sample_relevant_notes,
+        sample_all_notes,
         sample_generated_tasks,
     ):
         """達成率が低い場合の動作を確認"""
         # モックの設定
         mock_calendar_repository.get_events.return_value = sample_events
+        mock_note_repository.find_by_note_type.return_value = sample_index_notes
         mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
         mock_note_repository.arhievment_rate.return_value = 0.2
-        mock_note_repository.find_relevant_notes.return_value = sample_relevant_notes
+        mock_note_repository.get_all_notes.return_value = sample_all_notes
         mock_reasoning_repository.generate_tasks.return_value = sample_generated_tasks
 
         # 実行
         result = use_case.exec()
 
-        # 検証
-        mock_reasoning_repository.generate_tasks.assert_called_once_with(
-            arhievment_rate=0.2,
-            relevant_notes=sample_relevant_notes,
-            events=sample_events,
-        )
+        # InitialContext に achievement_rate = 0.2 が渡されていることを確認
+        call_args = mock_reasoning_repository.generate_tasks.call_args
+        initial_context = call_args[0][0]
+        assert initial_context.achievement_rate == 0.2
+
         assert result == sample_generated_tasks
 
-    def test_exec_with_no_relevant_notes(
+    def test_exec_with_no_index_notes(
         self,
         use_case,
         mock_calendar_repository,
@@ -283,12 +321,13 @@ class TestExec:
         sample_events,
         sample_weekly_notes,
     ):
-        """関連ノートがない場合の動作を確認"""
+        """Indexノートがない場合の動作を確認"""
         # モックの設定
         mock_calendar_repository.get_events.return_value = sample_events
+        mock_note_repository.find_by_note_type.return_value = []
         mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
         mock_note_repository.arhievment_rate.return_value = 0.6
-        mock_note_repository.find_relevant_notes.return_value = []
+        mock_note_repository.get_all_notes.return_value = sample_weekly_notes
         mock_reasoning_repository.generate_tasks.return_value = [
             Task(name="基本タスク", task_type=TaskType.Daily, is_completed=False)
         ]
@@ -296,10 +335,38 @@ class TestExec:
         # 実行
         result = use_case.exec()
 
-        # 検証
-        mock_reasoning_repository.generate_tasks.assert_called_once_with(
-            arhievment_rate=0.6,
-            relevant_notes=[],
-            events=sample_events,
-        )
+        # InitialContext に空の index_notes が渡されていることを確認
+        call_args = mock_reasoning_repository.generate_tasks.call_args
+        initial_context = call_args[0][0]
+        assert initial_context.index_notes == []
+
         assert len(result) == 1
+
+    def test_exec_builds_note_metadata_list(
+        self,
+        use_case,
+        mock_calendar_repository,
+        mock_note_repository,
+        mock_reasoning_repository,
+        sample_events,
+        sample_index_notes,
+        sample_weekly_notes,
+        sample_all_notes,
+        sample_generated_tasks,
+    ):
+        """ノートメタデータリストが正しく構築されることを確認"""
+        # モックの設定
+        mock_calendar_repository.get_events.return_value = sample_events
+        mock_note_repository.find_by_note_type.return_value = sample_index_notes
+        mock_note_repository.get_daily_notes.return_value = sample_weekly_notes
+        mock_note_repository.arhievment_rate.return_value = 0.7
+        mock_note_repository.get_all_notes.return_value = sample_all_notes
+        mock_reasoning_repository.generate_tasks.return_value = sample_generated_tasks
+
+        # 実行
+        use_case.exec()
+
+        # InitialContext の note_metadata_list が全ノート数と一致することを確認
+        call_args = mock_reasoning_repository.generate_tasks.call_args
+        initial_context = call_args[0][0]
+        assert len(initial_context.note_metadata_list) == len(sample_all_notes)

@@ -94,6 +94,7 @@ class TestGeminiConfig:
         assert isinstance(config.api_key, str)
         assert config.model == "gemini-3-flash-preview"
         assert config.prompt_path == "prompts/gemini.md"
+        assert config.max_tool_calls == 10
 
     def test_with_custom_values(self):
         """カスタム値でインスタンス化できることを確認"""
