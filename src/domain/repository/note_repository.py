@@ -83,14 +83,15 @@ class NoteRepository(ABC):
         pass
 
     @abstractmethod
-    def get_daily_notes(self, days: int) -> List[Note]:
-        """日報を取得する
+    def get_daily_notes(self, days: int, exclude_today: bool = False) -> List[Note]:
+        """日報を取得する（日付順にソート）
 
         Args:
-            days(int): 日数
+            days(int): 取得する日数
+            exclude_today(bool): 当日のノートを除外するかどうか（デフォルト: False）
 
         Returns:
-            List[Note]: 日報
+            List[Note]: 日報（古い順）
         """
         pass
 

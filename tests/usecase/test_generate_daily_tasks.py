@@ -181,7 +181,7 @@ class TestExec:
         # 検証
         mock_calendar_repository.get_events.assert_called_once()
         mock_note_repository.find_by_note_type.assert_called_once_with(NoteType.Index)
-        mock_note_repository.get_daily_notes.assert_called_once_with(7)
+        mock_note_repository.get_daily_notes.assert_called_once_with(7, exclude_today=True)
         mock_note_repository.get_all_notes.assert_called_once()
         mock_reasoning_repository.generate_tasks.assert_called_once()
 

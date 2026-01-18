@@ -44,8 +44,8 @@ class GenerateDailyTasksUseCase:
         # Index ノートを取得（長期目標）
         index_notes = self.note_repository.find_by_note_type(NoteType.Index)
 
-        # 過去7日間の Daily ノートを取得
-        weekly_daily_notes = self.note_repository.get_daily_notes(7)
+        # 過去7日間の Daily ノートを取得（当日のノートを除外）
+        weekly_daily_notes = self.note_repository.get_daily_notes(7, exclude_today=True)
 
         # 達成率を計算（Daily ノートがある場合）
         achievement_rate = 0.0

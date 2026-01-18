@@ -460,6 +460,74 @@ class TestGetDailyNotes:
 
         assert len(notes) == 1
 
+    def test_notes_sorted_by_uid(
+        self, tmp_vault, obsidian_repo, sample_daily_note_content
+    ):
+        """ノートがUID順にソートされる"""
+        # 逆順でファイルを作成
+        for i in [3, 1, 2]:
+            content = sample_daily_note_content.replace(
+                "daily-2026-01-18", f"daily-2026-01-{18 + i:02d}"
+            ).replace("2026-01-18", f"2026-01-{18 + i:02d}")
+            (tmp_vault / f"daily_{i}.md").write_text(content)
+
+        notes = obsidian_repo.get_daily_notes(3)
+
+        # 古い順にソートされている
+        assert notes[0].properties.uid == "daily-2026-01-19"
+        assert notes[1].properties.uid == "daily-2026-01-20"
+        assert notes[2].properties.uid == "daily-2026-01-21"
+
+    def test_exclude_today(self, tmp_vault, obsidian_repo, sample_daily_note_content):
+        """exclude_today=True で当日のノートを除外"""
+        from datetime import datetime
+        from unittest.mock import patch
+
+        # 当日の日付を固定
+        with patch(
+            "src.infrastructure.repositories.obsidian_repository.datetime"
+        ) as mock_datetime:
+            mock_datetime.now.return_value = datetime(2026, 1, 20)
+            mock_datetime.strftime = datetime.strftime
+
+            # 2026-01-19, 2026-01-20（当日）, 2026-01-21 のノートを作成
+            for day in [19, 20, 21]:
+                content = sample_daily_note_content.replace(
+                    "daily-2026-01-18", f"2026-01-{day:02d}"
+                ).replace("2026-01-18", f"2026-01-{day:02d}")
+                (tmp_vault / f"daily_{day}.md").write_text(content)
+
+            notes = obsidian_repo.get_daily_notes(10, exclude_today=True)
+
+            # 当日（2026-01-20）が除外されている
+            assert len(notes) == 2
+            uids = [n.properties.uid for n in notes]
+            assert "2026-01-20" not in uids
+
+    def test_exclude_today_false(
+        self, tmp_vault, obsidian_repo, sample_daily_note_content
+    ):
+        """exclude_today=False で当日のノートを含む"""
+        from datetime import datetime
+        from unittest.mock import patch
+
+        with patch(
+            "src.infrastructure.repositories.obsidian_repository.datetime"
+        ) as mock_datetime:
+            mock_datetime.now.return_value = datetime(2026, 1, 20)
+            mock_datetime.strftime = datetime.strftime
+
+            # 2026-01-19, 2026-01-20（当日）のノートを作成
+            for day in [19, 20]:
+                content = sample_daily_note_content.replace(
+                    "daily-2026-01-18", f"2026-01-{day:02d}"
+                ).replace("2026-01-18", f"2026-01-{day:02d}")
+                (tmp_vault / f"daily_{day}.md").write_text(content)
+
+            notes = obsidian_repo.get_daily_notes(10, exclude_today=False)
+
+            assert len(notes) == 2
+
 
 class TestSaveDailyNote:
     """save_daily_note のテスト"""
