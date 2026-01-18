@@ -494,13 +494,13 @@ class ObsidianRepository(NoteRepository):
             )
 
     def find_relevant_notes(
-        self, events: List[Event] = [], weekly_notes: List[Note] = []
+        self, events: List[Event] = [], note_list: List[Note] = []
     ) -> List[Note]:
         """関連するタスクを取得する
 
         Args:
             events(List[Event]): イベント
-            weekly_notes(List[Note]): 週報
+            note_list(List[Note]): ノートリスト
 
         Returns:
             List[Note]: 関連するノート
@@ -508,7 +508,7 @@ class ObsidianRepository(NoteRepository):
         relevant_notes = set[Note]()
         for event in events:
             relevant_notes.update(self.search_by_text(event.name))
-        for note in weekly_notes:
+        for note in note_list:
             relevant_notes.update(self.get_links(note))
         return list(relevant_notes)
 

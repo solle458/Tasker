@@ -21,6 +21,9 @@ class GeminiConfig(BaseSettings):
     api_key: str = Field(default="")
     model: str = Field(default="gemini-3-flash-preview")
     prompt_path: str = Field(default="prompts/gemini.md")
+    max_tool_calls: int = Field(
+        default=10, description="Function Calling の最大呼び出し回数"
+    )
     model_config = SettingsConfigDict(
         env_prefix="GEMINI_",
         env_file=".env",
