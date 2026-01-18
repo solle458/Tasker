@@ -37,7 +37,15 @@ class GeminiConfig(BaseSettings):
         extra="ignore",
     )
 
+class ObsidianConfig(BaseSettings):
+    vault_path: str = Field(default="")
+    model_config = SettingsConfigDict(
+        env_prefix="OBSIDIAN_",
+        env_file=str(_ENV_FILE),
+        extra="ignore",
+    )
 
 class Config(BaseSettings):
     google_calendar: GoogleCalendarConfig = Field(default=GoogleCalendarConfig())
     gemini: GeminiConfig = Field(default=GeminiConfig())
+    obsidian: ObsidianConfig = Field(default=ObsidianConfig())
