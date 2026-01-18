@@ -1,6 +1,10 @@
 make run:
 	uv run -m src.main
 
+make install:
+	uv sync
+	uv add -r requirement.txt
+
 make check:
 	make lint
 	make type

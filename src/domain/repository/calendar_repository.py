@@ -6,20 +6,20 @@ from src.domain.models.calendar import Calendar, Event
 
 class CalendarRepository(ABC):
     @abstractmethod
-    def get_calendar(self) -> Calendar:
+    def get_calendars(self) -> List[Calendar]:
         """カレンダーを取得する
         Returns:
-            Calendar: カレンダー
+            List[Calendar]: カレンダー
         """
         pass
 
     @abstractmethod
-    def get_events(self, start_date: datetime, end_date: datetime, days: int) -> List[Event]:
+    def get_events(self, start_date: datetime, end_date: datetime, limit: int) -> List[Event]:
         """イベントを取得する
         Args:
             start_date(datetime): 開始日
             end_date(datetime): 終了日
-            days(int): 日数
+            limit(int): 取得件数
         Returns:
             List[Event]: イベント
         """
