@@ -295,7 +295,19 @@ class GeminiRepository(ReasoningRepository):
         tool = types.Tool(function_declarations=tool_declarations)
 
         # 設定
-        config = types.GenerateContentConfig(
+        # NOTE: AUTO だと Gemini がツール不要と判断した場合に呼び出さない
+        # 最初は ANY を使って少なくとも1回はツールを呼び出すことを強制
+        # ツール呼び出し後は AUTO に戻して最終回答を得られるようにする
+        config_any = types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            tools=[tool],
+            tool_config=types.ToolConfig(
+                function_calling_config=types.FunctionCallingConfig(
+                    mode=types.FunctionCallingConfigMode.ANY
+                )
+            ),
+        )
+        config_auto = types.GenerateContentConfig(
             system_instruction=system_prompt,
             tools=[tool],
             tool_config=types.ToolConfig(
@@ -314,12 +326,14 @@ class GeminiRepository(ReasoningRepository):
         tool_call_count = 0
 
         while tool_call_count < self.config.max_tool_calls:
-            logger.debug(f"Gemini API 呼び出し (ツール呼び出し回数: {tool_call_count})")
+            # 最初の呼び出しはANY（ツール強制）、その後はAUTO（柔軟）
+            current_config = config_any if tool_call_count == 0 else config_auto
+            logger.debug(f"Gemini API 呼び出し (ツール呼び出し回数: {tool_call_count}, mode: {'ANY' if tool_call_count == 0 else 'AUTO'})")
 
             response = self.client.models.generate_content(
                 model=self.config.model,
                 contents=contents,
-                config=config,
+                config=current_config,
             )
 
             # レスポンスを会話履歴に追加
@@ -328,6 +342,7 @@ class GeminiRepository(ReasoningRepository):
 
             # Function Call があるか確認
             function_calls = response.function_calls
+
             if not function_calls:
                 # Function Call がない = 最終回答
                 logger.info(f"最終回答を取得 (ツール呼び出し回数: {tool_call_count})")

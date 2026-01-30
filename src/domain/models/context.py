@@ -119,9 +119,10 @@ class InitialContext:
         # ノートメタデータ一覧（目次）
         if self.note_metadata_list:
             metadata_section = "## ノート一覧（目次）\n"
-            metadata_section += "以下のノートが利用可能です。詳細が必要な場合は `read_note` ツールで取得してください。\n\n"
+            metadata_section += "以下のノートが利用可能です。詳細が必要な場合は `read_note` ツールで取得してください。`read_note` ツールを使用する場合は、ファイル名を使用してください。\n\n"
             for meta in self.note_metadata_list:
                 metadata_section += f"- **{meta.name}** (type: {meta.note_type.name})\n"
+                metadata_section += f"  - ファイル名: {meta.name}\n"
                 if meta.title:
                     metadata_section += f"  - タイトル: {meta.title}\n"
                 if meta.tags:

@@ -1,6 +1,14 @@
+import logging
 from typing import List
 
 from src.usecase.generate_daily_tasks import GenerateDailyTasksUseCase
+
+# ログ設定
+logging.basicConfig(
+    level=logging.DEBUG,  # DEBUG以上のログを出力
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 from src.infrastructure.config import Config
 from src.infrastructure.repositories.google_calendar_repository import GoogleCalendarRepository
 from src.infrastructure.repositories.gemini_repository import GeminiRepository
